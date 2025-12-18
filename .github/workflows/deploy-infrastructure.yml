@@ -1,0 +1,45 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Bicep template
+        uses: azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: taskmanager-${{ github.event.inputs.environment || 'dev' }}
+          template: ./infrastructure/main.bicep
+          parameters: ./infrastructure/${{ github.event.inputs.environment || 'dev' }}.bicepparam
+          failOnStdErr: false
+
+      - name: Get deployment outputs
+        id: outputs
+        run: |
+          echo "Deployment completed successfully"

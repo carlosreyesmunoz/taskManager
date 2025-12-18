@@ -1,0 +1,143 @@
+<mxfile host="65bd71144e">
+    <diagram id="W_pUIV4lAgwsAZhejPRL" name="Page-1">
+        <mxGraphModel dx="1520" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Organization Container -->
+                <mxCell id="org_container" value="Organization" style="swimlane;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="50" width="1100" height="700" as="geometry"/>
+                </mxCell>
+                
+                <!-- Admin Actor -->
+                <mxCell id="admin" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="org_container">
+                    <mxGeometry x="80" y="100" width="30" height="60" as="geometry"/>
+                </mxCell>
+                
+                <!-- User Actor -->
+                <mxCell id="user" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="org_container">
+                    <mxGeometry x="80" y="300" width="30" height="60" as="geometry"/>
+                </mxCell>
+                
+                <!-- Task Pool -->
+                <mxCell id="task_pool" value="Task Pool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="org_container">
+                    <mxGeometry x="400" y="80" width="120" height="60" as="geometry"/>
+                </mxCell>
+                
+                <!-- Task States -->
+                <mxCell id="task_uncompleted" value="Task&#xa;(UNCOMPLETED)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="org_container">
+                    <mxGeometry x="600" y="200" width="120" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="task_completed" value="Task&#xa;(COMPLETED)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="org_container">
+                    <mxGeometry x="800" y="200" width="120" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="task_finalized" value="Task&#xa;(FINALIZED)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="org_container">
+                    <mxGeometry x="800" y="350" width="120" height="60" as="geometry"/>
+                </mxCell>
+                
+                <!-- User Points -->
+                <mxCell id="user_points" value="User Points&#xa;Updated" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#666666;" vertex="1" parent="org_container">
+                    <mxGeometry x="600" y="480" width="100" height="60" as="geometry"/>
+                </mxCell>
+                
+                <!-- Flow Arrows and Labels -->
+                
+                <!-- Admin creates task -->
+                <mxCell id="create_task_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="org_container" source="admin" target="task_pool">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="create_task_label" value="1. Create Task" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="create_task_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Admin can assign directly -->
+                <mxCell id="assign_direct_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="org_container" source="admin" target="task_uncompleted">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="200" y="130"/>
+                            <mxPoint x="200" y="230"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="assign_direct_label" value="2a. Direct Assign" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="assign_direct_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- User picks from pool -->
+                <mxCell id="pick_from_pool_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="org_container" source="user" target="task_pool">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="300" y="330"/>
+                            <mxPoint x="300" y="180"/>
+                            <mxPoint x="460" y="180"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="pick_from_pool_label" value="2b. Pick Task" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="pick_from_pool_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Task from pool to uncompleted -->
+                <mxCell id="pool_to_uncompleted_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="org_container" source="task_pool" target="task_uncompleted">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="560" y="110"/>
+                            <mxPoint x="560" y="230"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                
+                <!-- User completes task -->
+                <mxCell id="complete_task_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="org_container" source="task_uncompleted" target="task_completed">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="complete_task_label" value="3. Mark Complete" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="complete_task_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Admin validates -->
+                <mxCell id="validate_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="org_container" source="task_completed" target="task_finalized">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="validate_label" value="4. Admin Validates" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="validate_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Points added -->
+                <mxCell id="points_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="org_container" source="task_finalized" target="user_points">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="800" y="450"/>
+                            <mxPoint x="750" y="450"/>
+                            <mxPoint x="750" y="510"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="points_label" value="5. Points Added" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="points_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Admin invitation flow -->
+                <mxCell id="invite_arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;dashPattern=8 8;" edge="1" parent="org_container" source="admin" target="user">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="invite_label" value="Invite Users&#xa;&amp; Assign Roles" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" vertex="1" connectable="0" parent="invite_arrow">
+                    <mxGeometry x="-0.1" y="-1" relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Legend -->
+                <mxCell id="legend" value="Legend:&#xa;Solid lines = Task flow&#xa;Dashed lines = User management" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="org_container">
+                    <mxGeometry x="50" y="550" width="200" height="60" as="geometry"/>
+                </mxCell>
+                
+                <!-- Data Structure Info -->
+                <mxCell id="structure_info" value="Data Structure:&#xa;• Organization → Users → Tasks&#xa;• Users have roles &amp; points&#xa;• Tasks have status &amp; assignments&#xa;• Isolated by organization" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="org_container">
+                    <mxGeometry x="300" y="550" width="250" height="100" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

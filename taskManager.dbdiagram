@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "detailLevel": "All",
+  "tablePositions": [
+    {
+      "name": "organizations",
+      "schemaName": "public",
+      "x": 17.064322668802106,
+      "y": -246.26805231188314
+    },
+    {
+      "name": "users",
+      "schemaName": "public",
+      "x": 12,
+      "y": 12
+    },
+    {
+      "name": "tasks",
+      "schemaName": "public",
+      "x": 490.5530526359257,
+      "y": -291.5428610445879
+    },
+    {
+      "name": "user_invitations",
+      "schemaName": "public",
+      "x": -293.49424230982675,
+      "y": -131.54286104458785
+    },
+    {
+      "name": "task_history",
+      "schemaName": "public",
+      "x": 486.7986581046757,
+      "y": 236.01351284164355
+    }
+  ],
+  "tableGroupCollapseStates": [],
+  "stickyNoteLayouts": [],
+  "referencePaths": []
+}

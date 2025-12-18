@@ -1,0 +1,102 @@
+// Task Manager Database Schema
+// Based on the organization -> users -> tasks hierarchy
+
+Table organizations {
+  id varchar [primary key]
+  name varchar [not null]
+  description text
+  owner_id varchar [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    name
+  }
+}
+
+Table users {
+  id varchar [primary key]
+  name varchar [not null]
+  email varchar [unique, not null]
+  role varchar [not null, default: 'user'] // 'admin' or 'user'
+  organization_id varchar [not null]
+  points integer [default: 0]
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    email
+    (organization_id, role)
+  }
+}
+
+Table tasks {
+  id varchar [primary key]
+  title varchar [not null]
+  description text
+  creator_id varchar [not null]
+  assignee_id varchar [null] // null when in task pool
+  organization_id varchar [not null]
+  points integer [default: 0]
+  assigned boolean [default: false]
+  status varchar [not null, default: 'uncompleted'] // 'uncompleted', 'completed', 'finalized'
+  due_date timestamp [null]
+  completed_at timestamp [null]
+  finalized_at timestamp [null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    (organization_id, status)
+    (assignee_id, status)
+    creator_id
+    due_date
+  }
+}
+
+Table user_invitations {
+  id varchar [primary key]
+  organization_id varchar [not null]
+  inviter_id varchar [not null]
+  email varchar [not null]
+  role varchar [not null, default: 'user']
+  token varchar [unique, not null]
+  expires_at timestamp [not null]
+  accepted_at timestamp [null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    token
+    (organization_id, email)
+  }
+}
+
+Table task_history {
+  id varchar [primary key]
+  task_id varchar [not null]
+  user_id varchar [not null]
+  action varchar [not null] // 'created', 'assigned', 'picked', 'completed', 'finalized', 'reassigned'
+  previous_status varchar [null]
+  new_status varchar [null]
+  previous_assignee_id varchar [null]
+  new_assignee_id varchar [null]
+  notes text [null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    task_id
+    (user_id, created_at)
+  }
+}
+
+// Relationships
+Ref: organizations.owner_id > users.id
+Ref: users.organization_id > organizations.id
+Ref: tasks.creator_id > users.id
+Ref: tasks.assignee_id > users.id
+Ref: tasks.organization_id > organizations.id
+Ref: user_invitations.organization_id > organizations.id
+Ref: user_invitations.inviter_id > users.id
+Ref: task_history.task_id > tasks.id
+Ref: task_history.user_id > users.id

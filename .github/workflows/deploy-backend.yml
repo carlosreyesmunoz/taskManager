@@ -1,0 +1,61 @@
+name: Deploy Backend API
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./backend/TaskManager.Api
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: ./backend/TaskManager.Api
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build --output ./publish
+        working-directory: ./backend/TaskManager.Api
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: taskmanager-${{ github.event.inputs.environment || 'dev' }}-api
+          package: ./backend/TaskManager.Api/publish
+
+      - name: Run Database Migrations
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet ef database update --project ./backend/TaskManager.Api
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}

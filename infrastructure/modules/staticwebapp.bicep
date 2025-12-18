@@ -2,7 +2,7 @@
 param staticWebAppName string
 
 @description('Location for all resources')
-param location string = 'West US 2'
+param location string = 'Sweden Central'
 
 @description('Environment name')
 param environment string
@@ -50,4 +50,5 @@ resource staticWebAppSettings 'Microsoft.Web/staticSites/config@2023-12-01' = {
 
 output staticWebAppName string = staticWebApp.name
 output staticWebAppUrl string = 'https://${staticWebApp.properties.defaultHostname}'
+@secure()
 output deploymentToken string = staticWebApp.listSecrets().properties.apiKey

@@ -18,10 +18,10 @@ param environment string
 param postgresVersion string = '15'
 
 @description('Server SKU')
-param skuName string = 'Standard_B1ms'
+param skuName string = environment == 'prod' ? 'Standard_B1ms' : 'Standard_B1ms'
 
 @description('Server tier')
-param tier string = 'Burstable'
+param tier string = environment == 'prod' ? 'Burstable' : 'Burstable'
 
 @description('Storage size in GB')
 param storageSizeGB int = 32
@@ -95,4 +95,5 @@ resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-06-0
 output serverName string = postgresqlServer.name
 output serverFqdn string = postgresqlServer.properties.fullyQualifiedDomainName
 output databaseName string = database.name
-output connectionString string = 'Host=${postgresqlServer.properties.fullyQualifiedDomainName};Database=${database.name};Username=${adminUsername};Password=${adminPassword};SSL Mode=Require;Trust Server Certificate=true'
+// Connection string without password - password should be stored in Key Vault
+output connectionStringTemplate string = 'Host=${postgresqlServer.properties.fullyQualifiedDomainName};Database=${database.name};Username=${adminUsername};Password=<from-keyvault>;SSL Mode=Require;Trust Server Certificate=true'

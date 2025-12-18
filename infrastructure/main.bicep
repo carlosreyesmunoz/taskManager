@@ -17,8 +17,8 @@ param dbAdminPassword string
 
 // Variables
 var resourcePrefix = '${appName}-${environment}'
-var keyVaultName = '${resourcePrefix}-kv-${uniqueString(resourceGroup().id)}'
-var dbServerName = '${resourcePrefix}-psql-${uniqueString(resourceGroup().id)}'
+var keyVaultName = 'kv-${appName}-${environment}-${substring(uniqueString(resourceGroup().id), 0, 6)}'
+var dbServerName = '${resourcePrefix}-psql-${substring(uniqueString(resourceGroup().id), 0, 6)}'
 var appServicePlanName = '${resourcePrefix}-asp'
 var webAppName = '${resourcePrefix}-api'
 var staticWebAppName = '${resourcePrefix}-web'
@@ -79,7 +79,7 @@ module appService 'modules/appservice.bicep' = {
     location: location
     environment: environment
     keyVaultName: keyVaultName
-    dbConnectionString: database.outputs.connectionString
+    dbConnectionString: 'Host=${database.outputs.serverFqdn};Database=${database.outputs.databaseName};Username=${dbAdminUsername};Password=${dbAdminPassword};SSL Mode=Require;Trust Server Certificate=true'
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
   dependsOn: [
@@ -103,7 +103,7 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
 resource dbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   name: '${keyVaultName}/DatabaseConnectionString'
   properties: {
-    value: database.outputs.connectionString
+    value: 'Host=${database.outputs.serverFqdn};Database=${database.outputs.databaseName};Username=${dbAdminUsername};Password=${dbAdminPassword};SSL Mode=Require;Trust Server Certificate=true'
   }
   dependsOn: [
     keyVault

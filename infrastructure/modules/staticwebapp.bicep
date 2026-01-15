@@ -2,7 +2,7 @@
 param staticWebAppName string
 
 @description('Location for all resources - Static Web Apps has limited regions')
-param location string = 'westeurope'
+param location string = 'centralus'
 
 @description('Environment name')
 param environment string

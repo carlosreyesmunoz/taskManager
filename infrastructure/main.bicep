@@ -87,12 +87,12 @@ module appService 'modules/appservice.bicep' = {
   ]
 }
 
-// Deploy Static Web App (use West Europe as Sweden Central isn't supported)
+// Deploy Static Web App (use Central US as some regions aren't accepting new customers)
 module staticWebApp 'modules/staticwebapp.bicep' = {
   name: 'staticWebAppDeployment'
   params: {
     staticWebAppName: staticWebAppName
-    location: 'westeurope'
+    location: 'centralus'
     environment: environment
     apiUrl: appService.outputs.webAppUrl
   }

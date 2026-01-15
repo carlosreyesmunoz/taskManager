@@ -9,17 +9,16 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: 'Environment to deploy (prod requires manual approval)'
         required: true
         type: choice
         options:
           - dev
-          - prod
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'dev' }}
+    environment: dev
     
     steps:
       - name: Checkout code
@@ -41,7 +40,7 @@ jobs:
         working-directory: ./frontend
         env:
           VITE_API_URL: ${{ secrets.API_URL }}
-          VITE_ENVIRONMENT: ${{ github.event.inputs.environment || 'dev' }}
+          VITE_ENVIRONMENT: dev
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1

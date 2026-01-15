@@ -9,17 +9,16 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: 'Environment to deploy (prod requires manual approval)'
         required: true
         type: choice
         options:
           - dev
-          - prod
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'dev' }}
+    environment: dev
     
     steps:
       - name: Checkout code
@@ -50,7 +49,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: taskmanager-${{ github.event.inputs.environment || 'dev' }}-api
+          app-name: taskmanager-dev-api
           package: ./backend/TaskManager.Api/publish
 
       - name: Run Database Migrations

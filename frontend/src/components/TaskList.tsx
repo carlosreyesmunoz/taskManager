@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Task } from '../types';
+import type { Task } from '../types';
 import { taskService } from '../services/taskService';
 
 interface TaskListProps {

@@ -17,7 +17,7 @@ param dbAdminPassword string
 
 // Variables
 var resourcePrefix = '${appName}-${environment}'
-var keyVaultName = 'kv-${appName}-${environment}-${substring(uniqueString(resourceGroup().id), 0, 6)}'
+var keyVaultName = 'kv${appName}${environment}${substring(uniqueString(resourceGroup().id), 0, 6)}'
 var dbServerName = '${resourcePrefix}-psql-${substring(uniqueString(resourceGroup().id), 0, 6)}'
 var appServicePlanName = '${resourcePrefix}-asp'
 var webAppName = '${resourcePrefix}-api'
@@ -84,16 +84,15 @@ module appService 'modules/appservice.bicep' = {
   }
   dependsOn: [
     keyVault
-    database
   ]
 }
 
-// Deploy Static Web App
+// Deploy Static Web App (use West Europe as Sweden Central isn't supported)
 module staticWebApp 'modules/staticwebapp.bicep' = {
   name: 'staticWebAppDeployment'
   params: {
     staticWebAppName: staticWebAppName
-    location: location
+    location: 'westeurope'
     environment: environment
     apiUrl: appService.outputs.webAppUrl
   }
@@ -107,7 +106,6 @@ resource dbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
   }
   dependsOn: [
     keyVault
-    database
   ]
 }
 

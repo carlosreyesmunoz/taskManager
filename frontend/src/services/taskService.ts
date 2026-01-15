@@ -1,5 +1,5 @@
 import api from './api';
-import { Task } from '../types';
+import type { Task } from '../types';
 
 export const taskService = {
   async getTasks(organizationId: number): Promise<Task[]> {

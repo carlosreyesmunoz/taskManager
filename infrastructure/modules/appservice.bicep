@@ -80,7 +80,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'DefaultConnection'
           connectionString: dbConnectionString
-          type: 'PostgreSQL'
+          type: 'SQLAzure'
         }
       ]
       cors: {

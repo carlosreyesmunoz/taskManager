@@ -1,18 +1,17 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: taskmanager-postgres
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: taskmanager-sqlserver
     environment:
-      POSTGRES_DB: TaskManagerDb
-      POSTGRES_USER: taskmanageradmin
-      POSTGRES_PASSWORD: TaskManager123!
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: TaskManager123!
+      MSSQL_PID: Developer
     ports:
-      - "5432:5432"
+      - "1433:1433"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
+      - sqlserver_data:/var/opt/mssql
     restart: unless-stopped
 
   adminer:
@@ -21,8 +20,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - sqlserver
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  sqlserver_data:

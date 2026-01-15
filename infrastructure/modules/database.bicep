@@ -1,4 +1,4 @@
-@description('Name of the PostgreSQL server')
+@description('Name of the SQL Server')
 param serverName string
 
 @description('Location for all resources')
@@ -14,47 +14,45 @@ param adminPassword string
 @description('Environment name')
 param environment string
 
-@description('PostgreSQL version')
-param postgresVersion string = '15'
+@description('Database name')
+param databaseName string = 'TaskManagerDb'
 
-@description('Server SKU')
-param skuName string = environment == 'prod' ? 'Standard_B1ms' : 'Standard_B1ms'
-
-@description('Server tier')
-param tier string = environment == 'prod' ? 'Burstable' : 'Burstable'
-
-@description('Storage size in GB')
-param storageSizeGB int = 32
-
-resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
+// Azure SQL Server
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
   name: serverName
   location: location
-  sku: {
-    name: skuName
-    tier: tier
-  }
   properties: {
-    version: postgresVersion
     administratorLogin: adminUsername
     administratorLoginPassword: adminPassword
-    storage: {
-      storageSizeGB: storageSizeGB
-      tier: 'P4'
-    }
-    backup: {
-      backupRetentionDays: 7
-      geoRedundantBackup: 'Disabled'
-    }
-    highAvailability: {
-      mode: 'Disabled'
-    }
-    authConfig: {
-      activeDirectoryAuth: 'Disabled'
-      passwordAuth: 'Enabled'
-    }
-    network: {
-      publicNetworkAccess: 'Enabled'
-    }
+    version: '12.0'
+    minimalTlsVersion: '1.2'
+    publicNetworkAccess: 'Enabled'
+  }
+  tags: {
+    Environment: environment
+    Application: 'TaskManager'
+  }
+}
+
+// Azure SQL Database - Free tier (serverless)
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
+  name: databaseName
+  parent: sqlServer
+  location: location
+  sku: {
+    name: 'GP_S_Gen5_1'
+    tier: 'GeneralPurpose'
+    family: 'Gen5'
+    capacity: 1
+  }
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+    maxSizeBytes: 34359738368 // 32 GB
+    autoPauseDelay: 60 // Auto-pause after 60 minutes of inactivity
+    minCapacity: json('0.5')
+    requestedBackupStorageRedundancy: 'Local'
+    useFreeLimit: true
+    freeLimitExhaustionBehavior: 'AutoPause'
   }
   tags: {
     Environment: environment
@@ -63,9 +61,9 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-
 }
 
 // Allow Azure services to access the server
-resource allowAzureServices 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-06-01-preview' = {
+resource allowAzureServices 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = {
   name: 'AllowAzureServices'
-  parent: postgresqlServer
+  parent: sqlServer
   properties: {
     startIpAddress: '0.0.0.0'
     endIpAddress: '0.0.0.0'
@@ -73,27 +71,16 @@ resource allowAzureServices 'Microsoft.DBforPostgreSQL/flexibleServers/firewallR
 }
 
 // Allow all IPs for development (remove in production)
-resource allowAllIPs 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-06-01-preview' = if (environment == 'dev') {
+resource allowAllIPs 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = if (environment == 'dev') {
   name: 'AllowAllIPs'
-  parent: postgresqlServer
+  parent: sqlServer
   properties: {
     startIpAddress: '0.0.0.0'
     endIpAddress: '255.255.255.255'
   }
 }
 
-// Create the application database
-resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-06-01-preview' = {
-  name: 'TaskManagerDb'
-  parent: postgresqlServer
-  properties: {
-    charset: 'UTF8'
-    collation: 'en_US.utf8'
-  }
-}
-
-output serverName string = postgresqlServer.name
-output serverFqdn string = postgresqlServer.properties.fullyQualifiedDomainName
-output databaseName string = database.name
-// Connection string without password - password should be stored in Key Vault
-output connectionStringTemplate string = 'Host=${postgresqlServer.properties.fullyQualifiedDomainName};Database=${database.name};Username=${adminUsername};Password=<from-keyvault>;SSL Mode=Require;Trust Server Certificate=true'
+output serverName string = sqlServer.name
+output serverFqdn string = sqlServer.properties.fullyQualifiedDomainName
+output databaseName string = sqlDatabase.name
+output connectionStringTemplate string = 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabase.name};Persist Security Info=False;User ID=${adminUsername};Password=<from-keyvault>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'

@@ -32,7 +32,7 @@ builder.Services.Configure<RouteOptions>(options =>
 builder.Services.AddDbContext<TaskManagerDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseNpgsql(connectionString);
+    options.UseSqlServer(connectionString);
 });
 
 // Add application services

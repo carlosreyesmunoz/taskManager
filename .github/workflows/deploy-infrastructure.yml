@@ -29,6 +29,10 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Create Resource Group
+        run: |
+          az group create --name taskmanager-dev --location swedencentral --tags Environment=dev Project=taskmanager
+
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v1
         with:

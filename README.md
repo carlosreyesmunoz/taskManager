@@ -133,7 +133,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 1. **Create Azure resources**
    ```bash
-   az group create --name taskmanager-dev --location eastus
+   az group create --name taskmanager-dev --location swedencentral
    az deployment group create \
      --resource-group taskmanager-dev \
      --template-file infrastructure/main.bicep \

@@ -52,10 +52,10 @@ Frontend will be available at: `http://localhost:5173`
 
 ```bash
 # Development environment
-az group create --name taskmanager-dev --location eastus
+az group create --name taskmanager-dev --location swedencentral
 
 # Production environment
-az group create --name taskmanager-prod --location eastus
+az group create --name taskmanager-prod --location swedencentral
 ```
 
 ### 2. Deploy Infrastructure with Bicep

@@ -61,7 +61,7 @@ jobs:
           template: ./infrastructure/main.bicep
           parameters: >
             ./infrastructure/dev.bicepparam
-            azureAdAdminLogin="${{ steps.sp-info.outputs.sp_name }}"
+            azureAdAdminLogin="${{ steps.sp-info.outputs.sp_app_id }}"
             azureAdAdminSid="${{ steps.sp-info.outputs.sp_object_id }}"
             azureAdTenantId="${{ steps.sp-info.outputs.tenant_id }}"
           failOnStdErr: false

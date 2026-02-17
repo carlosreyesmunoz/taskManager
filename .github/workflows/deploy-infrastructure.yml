@@ -33,37 +33,13 @@ jobs:
         run: |
           az group create --name taskmanager-dev --location swedencentral --tags Environment=dev Project=taskmanager
 
-      - name: Get Service Principal Info for SQL Admin
-        id: sp-info
-        run: |
-          # Get the service principal App ID (Client ID) which is required for SQL admin login
-          SP_APP_ID=$(az account show --query user.name -o tsv)
-          SP_OBJECT_ID=$(az ad sp show --id "$SP_APP_ID" --query id -o tsv)
-          SP_NAME=$(az ad sp show --id "$SP_APP_ID" --query appDisplayName -o tsv)
-          TENANT_ID=$(az account show --query tenantId -o tsv)
-          
-          echo "SQL Admin will be set to:"
-          echo "  Name: $SP_NAME"
-          echo "  App ID (Client ID): $SP_APP_ID"
-          echo "  Object ID: $SP_OBJECT_ID"
-          echo "  Tenant ID: $TENANT_ID"
-          
-          echo "sp_name=$SP_NAME" >> $GITHUB_OUTPUT
-          echo "sp_app_id=$SP_APP_ID" >> $GITHUB_OUTPUT
-          echo "sp_object_id=$SP_OBJECT_ID" >> $GITHUB_OUTPUT
-          echo "tenant_id=$TENANT_ID" >> $GITHUB_OUTPUT
-
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v1
         with:
           scope: resourcegroup
           resourceGroupName: taskmanager-dev
           template: ./infrastructure/main.bicep
-          parameters: >
-            ./infrastructure/dev.bicepparam
-            azureAdAdminLogin="${{ steps.sp-info.outputs.sp_app_id }}"
-            azureAdAdminSid="${{ steps.sp-info.outputs.sp_object_id }}"
-            azureAdTenantId="${{ steps.sp-info.outputs.tenant_id }}"
+          parameters: ./infrastructure/dev.bicepparam azureAdAdminLogin='${{ secrets.AZURE_AD_ADMIN_LOGIN }}' azureAdAdminSid='${{ secrets.AZURE_AD_ADMIN_SID }}' azureAdTenantId='${{ secrets.AZURE_TENANT_ID }}'
           failOnStdErr: false
 
       - name: Get deployment outputs

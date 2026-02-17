@@ -36,17 +36,20 @@ jobs:
       - name: Get Service Principal Info for SQL Admin
         id: sp-info
         run: |
-          # Get the service principal details from the current Azure login
-          SP_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv 2>/dev/null || az account show --query user.name -o tsv | xargs -I {} az ad sp show --id {} --query id -o tsv)
-          SP_NAME=$(az ad signed-in-user show --query userPrincipalName -o tsv 2>/dev/null || az account show --query user.name -o tsv | xargs -I {} az ad sp show --id {} --query appDisplayName -o tsv)
+          # Get the service principal App ID (Client ID) which is required for SQL admin login
+          SP_APP_ID=$(az account show --query user.name -o tsv)
+          SP_OBJECT_ID=$(az ad sp show --id "$SP_APP_ID" --query id -o tsv)
+          SP_NAME=$(az ad sp show --id "$SP_APP_ID" --query appDisplayName -o tsv)
           TENANT_ID=$(az account show --query tenantId -o tsv)
           
           echo "SQL Admin will be set to:"
           echo "  Name: $SP_NAME"
+          echo "  App ID (Client ID): $SP_APP_ID"
           echo "  Object ID: $SP_OBJECT_ID"
           echo "  Tenant ID: $TENANT_ID"
           
           echo "sp_name=$SP_NAME" >> $GITHUB_OUTPUT
+          echo "sp_app_id=$SP_APP_ID" >> $GITHUB_OUTPUT
           echo "sp_object_id=$SP_OBJECT_ID" >> $GITHUB_OUTPUT
           echo "tenant_id=$TENANT_ID" >> $GITHUB_OUTPUT
 

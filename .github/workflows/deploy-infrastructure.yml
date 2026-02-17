@@ -33,6 +33,29 @@ jobs:
         run: |
           az group create --name taskmanager-dev --location swedencentral --tags Environment=dev Project=taskmanager
 
+      - name: Verify Azure AD Parameters
+        run: |
+          if [ -z "${{ secrets.AZURE_AD_ADMIN_LOGIN }}" ]; then
+            echo "ERROR: AZURE_AD_ADMIN_LOGIN secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_AD_ADMIN_SID }}" ]; then
+            echo "ERROR: AZURE_AD_ADMIN_SID secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_TENANT_ID }}" ]; then
+            echo "ERROR: AZURE_TENANT_ID secret is not set"
+            exit 1
+          fi
+          echo "All Azure AD parameters are set"
+          echo "Admin Login length: ${#ADMIN_LOGIN}"
+          echo "Admin SID length: ${#ADMIN_SID}"
+          echo "Tenant ID length: ${#TENANT_ID}"
+        env:
+          ADMIN_LOGIN: ${{ secrets.AZURE_AD_ADMIN_LOGIN }}
+          ADMIN_SID: ${{ secrets.AZURE_AD_ADMIN_SID }}
+          TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v1
         with:
@@ -41,9 +64,9 @@ jobs:
           template: ./infrastructure/main.bicep
           parameters: >
             ./infrastructure/dev.bicepparam
-            azureAdAdminLogin=${{ secrets.AZURE_AD_ADMIN_LOGIN }}
-            azureAdAdminSid=${{ secrets.AZURE_AD_ADMIN_SID }}
-            azureAdTenantId=${{ secrets.AZURE_TENANT_ID }}
+            azureAdAdminLogin="${{ secrets.AZURE_AD_ADMIN_LOGIN }}"
+            azureAdAdminSid="${{ secrets.AZURE_AD_ADMIN_SID }}"
+            azureAdTenantId="${{ secrets.AZURE_TENANT_ID }}"
           failOnStdErr: false
 
       - name: Get deployment outputs

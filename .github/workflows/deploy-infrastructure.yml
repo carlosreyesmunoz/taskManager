@@ -33,28 +33,22 @@ jobs:
         run: |
           az group create --name taskmanager-dev --location swedencentral --tags Environment=dev Project=taskmanager
 
-      - name: Verify Azure AD Parameters
+      - name: Get Service Principal Info for SQL Admin
+        id: sp-info
         run: |
-          if [ -z "${{ secrets.AZURE_AD_ADMIN_LOGIN }}" ]; then
-            echo "ERROR: AZURE_AD_ADMIN_LOGIN secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.AZURE_AD_ADMIN_SID }}" ]; then
-            echo "ERROR: AZURE_AD_ADMIN_SID secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.AZURE_TENANT_ID }}" ]; then
-            echo "ERROR: AZURE_TENANT_ID secret is not set"
-            exit 1
-          fi
-          echo "All Azure AD parameters are set"
-          echo "Admin Login length: ${#ADMIN_LOGIN}"
-          echo "Admin SID length: ${#ADMIN_SID}"
-          echo "Tenant ID length: ${#TENANT_ID}"
-        env:
-          ADMIN_LOGIN: ${{ secrets.AZURE_AD_ADMIN_LOGIN }}
-          ADMIN_SID: ${{ secrets.AZURE_AD_ADMIN_SID }}
-          TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          # Get the service principal details from the current Azure login
+          SP_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv 2>/dev/null || az account show --query user.name -o tsv | xargs -I {} az ad sp show --id {} --query id -o tsv)
+          SP_NAME=$(az ad signed-in-user show --query userPrincipalName -o tsv 2>/dev/null || az account show --query user.name -o tsv | xargs -I {} az ad sp show --id {} --query appDisplayName -o tsv)
+          TENANT_ID=$(az account show --query tenantId -o tsv)
+          
+          echo "SQL Admin will be set to:"
+          echo "  Name: $SP_NAME"
+          echo "  Object ID: $SP_OBJECT_ID"
+          echo "  Tenant ID: $TENANT_ID"
+          
+          echo "sp_name=$SP_NAME" >> $GITHUB_OUTPUT
+          echo "sp_object_id=$SP_OBJECT_ID" >> $GITHUB_OUTPUT
+          echo "tenant_id=$TENANT_ID" >> $GITHUB_OUTPUT
 
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v1
@@ -64,9 +58,9 @@ jobs:
           template: ./infrastructure/main.bicep
           parameters: >
             ./infrastructure/dev.bicepparam
-            azureAdAdminLogin="${{ secrets.AZURE_AD_ADMIN_LOGIN }}"
-            azureAdAdminSid="${{ secrets.AZURE_AD_ADMIN_SID }}"
-            azureAdTenantId="${{ secrets.AZURE_TENANT_ID }}"
+            azureAdAdminLogin="${{ steps.sp-info.outputs.sp_name }}"
+            azureAdAdminSid="${{ steps.sp-info.outputs.sp_object_id }}"
+            azureAdTenantId="${{ steps.sp-info.outputs.tenant_id }}"
           failOnStdErr: false
 
       - name: Get deployment outputs

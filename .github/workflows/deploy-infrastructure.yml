@@ -39,7 +39,11 @@ jobs:
           scope: resourcegroup
           resourceGroupName: taskmanager-dev
           template: ./infrastructure/main.bicep
-          parameters: ./infrastructure/dev.bicepparam
+          parameters: >
+            ./infrastructure/dev.bicepparam
+            azureAdAdminLogin=${{ secrets.AZURE_AD_ADMIN_LOGIN }}
+            azureAdAdminSid=${{ secrets.AZURE_AD_ADMIN_SID }}
+            azureAdTenantId=${{ secrets.AZURE_TENANT_ID }}
           failOnStdErr: false
 
       - name: Get deployment outputs

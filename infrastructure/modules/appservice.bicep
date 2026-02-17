@@ -22,10 +22,10 @@ param dbConnectionString string
 param applicationInsightsConnectionString string
 
 @description('App Service Plan SKU')
-param skuName string = environment == 'prod' ? 'B1' : 'F1'
+param skuName string = 'F1'
 
 @description('App Service Plan tier')
-param skuTier string = environment == 'prod' ? 'Basic' : 'Free'
+param skuTier string = 'Free'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName

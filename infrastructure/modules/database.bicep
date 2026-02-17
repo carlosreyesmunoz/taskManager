@@ -4,26 +4,26 @@ param serverName string
 @description('Location for all resources')
 param location string
 
-@description('Administrator username')
-param adminUsername string
-
-@description('Administrator password')
-@secure()
-param adminPassword string
-
 @description('Environment name')
 param environment string
 
 @description('Database name')
 param databaseName string = 'TaskManagerDb'
 
+@description('Azure AD admin login (UPN)')
+param azureAdAdminLogin string
+
+@description('Azure AD admin SID (Object ID)')
+param azureAdAdminSid string
+
+@description('Azure AD Tenant ID')
+param azureAdTenantId string
+
 // Azure SQL Server
 resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
   name: serverName
   location: location
   properties: {
-    administratorLogin: adminUsername
-    administratorLoginPassword: adminPassword
     version: '12.0'
     minimalTlsVersion: '1.2'
     publicNetworkAccess: 'Enabled'
@@ -31,6 +31,17 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
   tags: {
     Environment: environment
     Application: 'TaskManager'
+  }
+}
+
+resource sqlServerAdministrators 'Microsoft.Sql/servers/administrators@2021-11-01' = {
+  name: 'ActiveDirectory'
+  parent: sqlServer
+  properties: {
+    administratorType: 'ActiveDirectory'
+    login: azureAdAdminLogin
+    sid: azureAdAdminSid
+    tenantId: azureAdTenantId
   }
 }
 
@@ -83,4 +94,4 @@ resource allowAllIPs 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = 
 output serverName string = sqlServer.name
 output serverFqdn string = sqlServer.properties.fullyQualifiedDomainName
 output databaseName string = sqlDatabase.name
-output connectionStringTemplate string = 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabase.name};Persist Security Info=False;User ID=${adminUsername};Password=<from-keyvault>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+output connectionStringTemplate string = 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabase.name};Persist Security Info=False;Password=<from-keyvault>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'

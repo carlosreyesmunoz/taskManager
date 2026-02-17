@@ -7,13 +7,14 @@ param location string = resourceGroup().location
 @description('Application name prefix')
 param appName string = 'taskmanager'
 
-@description('Administrator username for SQL server')
-@secure()
-param dbAdminUsername string
+@description('Azure AD admin login (UPN)')
+param azureAdAdminLogin string
 
-@description('Administrator password for SQL server')
-@secure()
-param dbAdminPassword string
+@description('Azure AD admin SID (Object ID)')
+param azureAdAdminSid string
+
+@description('Azure AD Tenant ID')
+param azureAdTenantId string
 
 // Variables
 var resourcePrefix = '${appName}-${environment}'
@@ -64,9 +65,10 @@ module database 'modules/database.bicep' = {
   params: {
     serverName: dbServerName
     location: location
-    adminUsername: dbAdminUsername
-    adminPassword: dbAdminPassword
     environment: environment
+    azureAdAdminLogin: azureAdAdminLogin
+    azureAdAdminSid: azureAdAdminSid
+    azureAdTenantId: azureAdTenantId
   }
 }
 
@@ -79,12 +81,9 @@ module appService 'modules/appservice.bicep' = {
     location: location
     environment: environment
     keyVaultName: keyVaultName
-    dbConnectionString: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;User ID=${dbAdminUsername};Password=${dbAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    dbConnectionString: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
-  dependsOn: [
-    keyVault
-  ]
 }
 
 // Deploy Static Web App (use Central US as some regions aren't accepting new customers)
@@ -102,11 +101,8 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
 resource dbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   name: '${keyVaultName}/DatabaseConnectionString'
   properties: {
-    value: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;User ID=${dbAdminUsername};Password=${dbAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    value: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
   }
-  dependsOn: [
-    keyVault
-  ]
 }
 
 resource appInsightsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {

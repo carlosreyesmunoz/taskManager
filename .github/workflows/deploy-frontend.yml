@@ -35,11 +35,22 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get API URL from Azure
+        id: get-api-url
+        run: |
+          API_URL=$(az webapp show --name taskmanager-dev-api --resource-group taskmanager-dev --query "defaultHostName" -o tsv)
+          echo "api_url=https://$API_URL" >> $GITHUB_OUTPUT
+
       - name: Build
         run: npm run build
         working-directory: ./frontend
         env:
-          VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_API_URL: ${{ steps.get-api-url.outputs.api_url }}
           VITE_ENVIRONMENT: dev
 
       - name: Deploy to Azure Static Web Apps

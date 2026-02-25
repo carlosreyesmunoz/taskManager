@@ -30,21 +30,18 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
     version: '12.0'
     minimalTlsVersion: '1.2'
     publicNetworkAccess: 'Enabled'
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      azureADOnlyAuthentication: true
+      principalType: 'User'
+      login: azureAdAdminLogin
+      sid: azureAdAdminSid
+      tenantId: azureAdTenantId
+    }
   }
   tags: {
     Environment: environment
     Application: 'TaskManager'
-  }
-}
-
-resource sqlServerAdministrators 'Microsoft.Sql/servers/administrators@2021-11-01' = {
-  name: 'ActiveDirectory'
-  parent: sqlServer
-  properties: {
-    administratorType: 'ActiveDirectory'
-    login: azureAdAdminLogin
-    sid: azureAdAdminSid
-    tenantId: azureAdTenantId
   }
 }
 

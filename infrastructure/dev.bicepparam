@@ -6,6 +6,6 @@ param appName = 'taskmanager'
 
 // Azure AD admin parameters will be passed from GitHub Actions secrets
 // These are placeholders and will be overridden by the deployment command
-param azureAdAdminLogin = ''
-param azureAdAdminSid = ''
-param azureAdTenantId = ''
+param azureAdAdminLogin = 'admin'
+param azureAdAdminSid = 'placeholder'
+param azureAdTenantId = 'placeholder'

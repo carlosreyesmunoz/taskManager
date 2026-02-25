@@ -52,13 +52,15 @@ jobs:
           az group create --name taskmanager-dev --location swedencentral --tags Environment=dev Project=taskmanager
 
       - name: Deploy Bicep template
-        uses: azure/arm-deploy@v1
-        with:
-          scope: resourcegroup
-          resourceGroupName: taskmanager-dev
-          template: ./infrastructure/main.bicep
-          parameters: ./infrastructure/dev.bicepparam azureAdAdminLogin='${{ secrets.AZURE_AD_ADMIN_LOGIN }}' azureAdAdminSid='${{ secrets.AZURE_AD_ADMIN_SID }}' azureAdTenantId='${{ secrets.AZURE_TENANT_ID }}'
-          failOnStdErr: false
+        run: |
+          az deployment group create \
+            --resource-group taskmanager-dev \
+            --template-file ./infrastructure/main.bicep \
+            --parameters ./infrastructure/dev.bicepparam \
+            --parameters azureAdAdminLogin="${{ secrets.AZURE_AD_ADMIN_LOGIN }}" \
+            --parameters azureAdAdminSid="${{ secrets.AZURE_AD_ADMIN_SID }}" \
+            --parameters azureAdTenantId="${{ secrets.AZURE_TENANT_ID }}" \
+            --verbose
 
       - name: Get deployment outputs
         id: outputs

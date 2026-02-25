@@ -5,15 +5,12 @@ using TaskManager.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Azure Key Vault configuration (only in non-development environments)
-if (!builder.Environment.IsDevelopment())
+// Add Azure Key Vault configuration whenever KeyVaultName is set (local dev uses appsettings, Azure uses Key Vault)
+var keyVaultName = builder.Configuration["KeyVaultName"];
+if (!string.IsNullOrEmpty(keyVaultName))
 {
-    var keyVaultName = builder.Configuration["KeyVaultName"];
-    if (!string.IsNullOrEmpty(keyVaultName))
-    {
-        var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
-        builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
-    }
+    var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+    builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
 }
 
 // Add services to the container
@@ -31,7 +28,9 @@ builder.Services.Configure<RouteOptions>(options =>
 // Add Entity Framework
 builder.Services.AddDbContext<TaskManagerDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    // Prefer Key Vault secret name; fall back to standard connection string config
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? builder.Configuration["DatabaseConnectionString"];
     options.UseSqlServer(connectionString);
 });
 

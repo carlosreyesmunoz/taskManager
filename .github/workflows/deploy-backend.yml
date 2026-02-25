@@ -41,10 +41,20 @@ jobs:
         run: dotnet publish --configuration Release --no-build --output ./publish
         working-directory: ./backend/TaskManager.Api
 
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [[ -z "${{ secrets.AZURE_CREDENTIALS }}" ]] && missing+=("AZURE_CREDENTIALS")
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: false
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

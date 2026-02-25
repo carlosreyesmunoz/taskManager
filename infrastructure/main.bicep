@@ -7,13 +7,16 @@ param location string = resourceGroup().location
 @description('Application name prefix')
 param appName string = 'taskmanager'
 
-@description('Azure AD admin login (UPN)')
+@description('Azure AD admin login (UPN, e.g. user@tenant.onmicrosoft.com)')
+@minLength(1)
 param azureAdAdminLogin string
 
 @description('Azure AD admin SID (Object ID)')
+@minLength(1)
 param azureAdAdminSid string
 
 @description('Azure AD Tenant ID')
+@minLength(1)
 param azureAdTenantId string
 
 // Variables

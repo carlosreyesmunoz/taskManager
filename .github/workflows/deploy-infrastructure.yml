@@ -24,6 +24,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [[ -z "${{ secrets.AZURE_CREDENTIALS }}"      ]] && missing+=("AZURE_CREDENTIALS")
+          [[ -z "${{ secrets.AZURE_AD_ADMIN_LOGIN }}"   ]] && missing+=("AZURE_AD_ADMIN_LOGIN")
+          [[ -z "${{ secrets.AZURE_AD_ADMIN_SID }}"     ]] && missing+=("AZURE_AD_ADMIN_SID")
+          [[ -z "${{ secrets.AZURE_TENANT_ID }}"        ]] && missing+=("AZURE_TENANT_ID")
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+
       - name: Azure Login
         uses: azure/login@v1
         with:

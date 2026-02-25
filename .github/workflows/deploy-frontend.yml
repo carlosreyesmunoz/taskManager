@@ -35,6 +35,16 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [[ -z "${{ secrets.AZURE_CREDENTIALS }}"              ]] && missing+=("AZURE_CREDENTIALS")
+          [[ -z "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}" ]] && missing+=("AZURE_STATIC_WEB_APPS_API_TOKEN")
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+
       - name: Azure Login
         uses: azure/login@v1
         with:

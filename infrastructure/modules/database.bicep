@@ -11,15 +11,15 @@ param environment string
 param databaseName string = 'TaskManagerDb'
 
 @description('Azure AD admin login (UPN, e.g. user@tenant.onmicrosoft.com)')
-@minLength(1)
+@minLength(36)
 param azureAdAdminLogin string
 
 @description('Azure AD admin SID (Object ID)')
-@minLength(1)
+@minLength(36)
 param azureAdAdminSid string
 
 @description('Azure AD Tenant ID')
-@minLength(1)
+@minLength(36)
 param azureAdTenantId string
 
 // Azure SQL Server

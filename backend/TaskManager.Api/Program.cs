@@ -72,18 +72,12 @@ app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
-// Ensure database is created
+// Apply migrations and seed initial data
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TaskManagerDbContext>();
-    if (app.Environment.IsDevelopment())
-    {
-        context.Database.EnsureCreated();
-    }
-    else
-    {
-        context.Database.Migrate();
-    }
+    context.Database.Migrate();
+    await DataSeeder.SeedAsync(context);
 }
 
 app.Run();

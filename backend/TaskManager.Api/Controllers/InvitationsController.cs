@@ -7,16 +7,11 @@ namespace TaskManager.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class InvitationsController : ControllerBase
+public class InvitationsController(IUserInvitationService invitationService) : ControllerBase
 {
-    private readonly IUserInvitationService _invitationService;
+    private readonly IUserInvitationService _invitationService = invitationService;
 
-    public InvitationsController(IUserInvitationService invitationService)
-    {
-        _invitationService = invitationService;
-    }
-
-    [HttpGet]
+  [HttpGet]
     public async Task<ActionResult<IEnumerable<UserInvitation>>> GetInvitations()
     {
         var invitations = await _invitationService.GetAllAsync();

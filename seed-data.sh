@@ -1,59 +1,65 @@
 #!/bin/bash
 
-# Seed script for TaskManager application
-# This creates initial test data to get started
+# Setup script for TaskManager local development
+# Starts the database, runs migrations, and seeds initial data.
+# The database used locally matches the hosted dev environment (SQL Server 2022).
 
-API_URL="http://localhost:5214/api"
+set -e
 
-echo "🌱 Seeding TaskManager database..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+API_DIR="$SCRIPT_DIR/backend/TaskManager.Api"
+
+echo "🚀 Setting up TaskManager development database..."
 echo ""
 
-# Step 1: Create initial user (without organization)
-echo "1️⃣  Creating initial user directly in database..."
-# We need to insert directly since we have a circular dependency
-
-# For now, let's use SQL to insert the first user and organization
-psql "postgresql://taskmanageradmin:TaskManager123!@localhost:5432/TaskManagerDb" << EOF
--- Temporarily disable foreign key constraints
-SET session_replication_role = 'replica';
-
--- Insert initial user (with temp organization reference)
-INSERT INTO "Users" ("Id", "Name", "Email", "Role", "OrganizationId", "Points", "IsActive", "CreatedAt", "UpdatedAt")
-VALUES 
-  ('admin-user-001', 'Admin User', 'admin@taskmanager.com', 'admin', 'temp-org-001', 0, true, NOW(), NOW())
-ON CONFLICT ("Id") DO NOTHING;
-
--- Insert initial organization
-INSERT INTO "Organizations" ("Id", "Name", "Description", "OwnerId", "CreatedAt", "UpdatedAt")
-VALUES 
-  ('temp-org-001', 'Default Organization', 'Initial organization for testing', 'admin-user-001', NOW(), NOW())
-ON CONFLICT ("Id") DO NOTHING;
-
--- Re-enable foreign key constraints
-SET session_replication_role = 'origin';
-
--- Verify the data
-SELECT 'User Created:' as status, "Id", "Name", "Email" FROM "Users" WHERE "Id" = 'admin-user-001';
-SELECT 'Organization Created:' as status, "Id", "Name", "OwnerId" FROM "Organizations" WHERE "Id" = 'temp-org-001';
-EOF
-
-echo "✅ Initial admin user and organization created!"
+# Step 1: Start Docker services
+echo "1️⃣  Starting Docker services (SQL Server 2022)..."
+docker compose up -d
+echo "   ✅ Docker services started"
 echo ""
-echo "📋 Initial Data:"
-echo "   Organization ID: temp-org-001"
-echo "   Organization Name: Default Organization"
-echo "   User ID: admin-user-001"
-echo "   User Email: admin@taskmanager.com"
+
+# Step 2: Wait for SQL Server to be ready
+echo "2️⃣  Waiting for SQL Server to be ready..."
+RETRIES=30
+until docker exec taskmanager-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "TaskManager123!" -No \
+    -Q "SELECT 1" > /dev/null 2>&1; do
+    RETRIES=$((RETRIES - 1))
+    if [ $RETRIES -le 0 ]; then
+        echo "   ❌ SQL Server did not become ready in time. Check: docker logs taskmanager-sqlserver"
+        exit 1
+    fi
+    echo "   ⏳ Still waiting... ($RETRIES retries left)"
+    sleep 2
+done
+echo "   ✅ SQL Server is ready"
 echo ""
-echo "🎉 You can now create additional users using the API!"
+
+# Step 3: Apply EF Core migrations
+echo "3️⃣  Applying database migrations..."
+cd "$API_DIR"
+DOTNET_ROLL_FORWARD=Major dotnet ef database update
+echo "   ✅ Migrations applied"
 echo ""
-echo "Example: Create a new user"
-echo 'curl -X POST http://localhost:5214/api/users \'
-echo '  -H "Content-Type: application/json" \'
-echo '  -d '"'"'{'
-echo '    "name": "John Doe",'
-echo '    "email": "john@example.com",'
-echo '    "role": "user",'
-echo '    "organizationId": "temp-org-001",'
-echo '    "isActive": true'
-echo '  }'"'"
+
+# Step 4: Seed data runs automatically on app startup via DataSeeder.
+#         Start the API once to trigger seeding, then stop it.
+echo "4️⃣  Running app startup to seed initial data..."
+ASPNETCORE_ENVIRONMENT=Development timeout 15 dotnet run --no-build 2>&1 | \
+    grep -E "(Seeding|Applying|Migrat|error|Error)" || true
+echo "   ✅ Seed data applied (idempotent - safe to run again)"
+echo ""
+
+echo "🎉 Setup complete!"
+echo ""
+echo "📋 Initial seed data:"
+echo "   Organization : Default Organization (org-default-001)"
+echo "   Admin user   : admin@taskmanager.com (user-admin-001)"
+echo "   Dev user     : jane@taskmanager.com  (user-dev-001)"
+echo "   Designer     : john@taskmanager.com  (user-designer-001)"
+echo "   Sample tasks : 6 tasks seeded"
+echo ""
+echo "▶️  To start the API:    cd backend/TaskManager.Api && dotnet run"
+echo "🗄️  To open Adminer UI:  http://localhost:8080"
+echo "    System: MS SQL | Server: sqlserver | Username: sa | Password: TaskManager123!"
+

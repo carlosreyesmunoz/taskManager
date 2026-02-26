@@ -1,6 +1,6 @@
 # Task Manager
 
-A multi-tenant task management application built with React (Vite), .NET 8 Web API, PostgreSQL, and deployed on Azure.
+A multi-tenant task management application built with React (Vite), .NET 8 Web API, SQL Server, and deployed on Azure.
 
 ## Features
 
@@ -24,14 +24,14 @@ A multi-tenant task management application built with React (Vite), .NET 8 Web A
 ### Backend
 - .NET 8 Web API
 - Entity Framework Core 8
-- PostgreSQL database
+- SQL Server 2022
 - Azure Key Vault for secrets management
 - Azure Identity for authentication
 
 ### Infrastructure
 - Azure App Service for backend hosting
 - Azure Static Web Apps for frontend hosting
-- Azure Database for PostgreSQL Flexible Server
+- Azure SQL Server for database
 - Azure Key Vault for secure configuration
 - Azure Application Insights for monitoring
 - Infrastructure as Code with Bicep
@@ -60,7 +60,7 @@ taskManager/
 │   └── prod.bicepparam      # Production parameters
 ├── .github/
 │   └── workflows/           # GitHub Actions CI/CD pipelines
-├── docker-compose.yml       # Local development PostgreSQL
+├── docker-compose.yml       # Local development SQL Server + Adminer
 └── DEPLOYMENT.md            # Detailed deployment guide
 ```
 
@@ -81,7 +81,7 @@ taskManager/
    cd taskManager
    ```
 
-2. **Start PostgreSQL database**
+2. **Start SQL Server database**
    ```bash
    docker-compose up -d
    ```
@@ -107,15 +107,14 @@ taskManager/
 
 5. **Access database UI (Adminer)**
    - URL: `http://localhost:8080`
-   - System: PostgreSQL
-   - Server: postgres
-   - Username: taskmanageradmin
+   - System: MS SQL
+   - Server: sqlserver
+   - Username: sa
    - Password: TaskManager123!
-   - Database: TaskManagerDb
 
 ## Database Schema
 
-The application uses a relational PostgreSQL database with the following main entities:
+The application uses a relational SQL Server database with the following main entities:
 
 - **Organizations** - Multi-tenant containers
 - **Users** - Role-based members (admin/user) with points
@@ -153,11 +152,11 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 ## Environment Variables
 
-### Backend (`appsettings.json`)
+### Backend (`appsettings.Development.json`)
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=TaskManagerDb;Username=taskmanageradmin;Password=TaskManager123!"
+    "DefaultConnection": "Server=localhost,1433;Database=TaskManagerDb;User Id=sa;Password=TaskManager123!;TrustServerCertificate=True"
   },
   "KeyVaultName": "taskmanager-dev-kv-xxxxx"
 }

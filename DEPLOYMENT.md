@@ -9,14 +9,14 @@
 
 ## Local Development Setup
 
-### 1. Start PostgreSQL Database
+### 1. Start SQL Server Database
 
 ```bash
 docker-compose up -d
 ```
 
 This will start:
-- PostgreSQL on port 5432
+- SQL Server 2022 on port 1433
 - Adminer (database UI) on port 8080
 
 ### 2. Run Database Migrations
@@ -79,8 +79,8 @@ az deployment group create \
 Add the following secrets to your GitHub repository:
 
 - `AZURE_CREDENTIALS` - Service principal credentials
-- `DB_ADMIN_USERNAME` - PostgreSQL admin username
-- `DB_ADMIN_PASSWORD` - PostgreSQL admin password
+- `DB_ADMIN_USERNAME` - SQL Server admin username
+- `DB_ADMIN_PASSWORD` - SQL Server admin password
 
 ### 4. Deploy via GitHub Actions
 
@@ -98,9 +98,10 @@ Run migrations against Azure database:
 
 ```bash
 # Get connection string from Azure
-az postgres flexible-server show-connection-string \
-  --server-name <server-name> \
-  --database-name TaskManagerDb
+az sql db show-connection-string \
+  --server <server-name> \
+  --name TaskManagerDb \
+  --client ado.net
 
 # Run migrations
 cd backend/TaskManager.Api
@@ -113,7 +114,7 @@ dotnet ef database update --connection "<connection-string>"
 
 - `ASPNETCORE_ENVIRONMENT` - Development/Production
 - `KeyVaultName` - Name of Azure Key Vault
-- `ConnectionStrings__DefaultConnection` - PostgreSQL connection string
+- `ConnectionStrings__DefaultConnection` - SQL Server connection string
 - `APPLICATIONINSIGHTS_CONNECTION_STRING` - Application Insights connection
 
 ### Frontend (Static Web App)
@@ -131,7 +132,7 @@ dotnet ef database update --connection "<connection-string>"
 
 ### Backend not connecting to database
 
-1. Check firewall rules in PostgreSQL Flexible Server
+1. Check firewall rules in Azure SQL Server
 2. Verify connection string in Key Vault
 3. Check App Service logs in Application Insights
 
@@ -144,7 +145,7 @@ dotnet ef database update --connection "<connection-string>"
 ## Cost Optimization
 
 - Use Free/F1 tier for development
-- Enable auto-pause for PostgreSQL in dev environment
+- Enable auto-pause for Azure SQL in dev environment
 - Monitor spending in Azure Cost Management
 
 ## Security Best Practices

@@ -6,35 +6,32 @@
 - **Backend API (.NET)**: http://localhost:5214
 - **Swagger API Docs**: http://localhost:5214/swagger
 - **Adminer (Database UI)**: http://localhost:8080
-- **PostgreSQL Database**: localhost:5432
+- **SQL Server Database**: localhost:1433
 
 ---
 
 ## Database Access
 
-### PostgreSQL Connection Information
+### SQL Server Connection Information
 ```
-Host: localhost
-Port: 5432
+Server: localhost,1433
 Database: TaskManagerDb
-Username: taskmanageradmin
+Username: sa
 Password: TaskManager123!
-SSL Mode: Disable
 ```
 
 ### Full Connection String
 ```
-Host=localhost;Port=5432;Database=TaskManagerDb;Username=taskmanageradmin;Password=TaskManager123!;SSL Mode=Disable
+Server=localhost,1433;Database=TaskManagerDb;User Id=sa;Password=TaskManager123!;TrustServerCertificate=True
 ```
 
 ### Adminer Web UI Login
 1. Navigate to: http://localhost:8080
 2. Enter credentials:
-   - **System**: PostgreSQL
-   - **Server**: postgres
-   - **Username**: taskmanageradmin
+   - **System**: MS SQL
+   - **Server**: sqlserver
+   - **Username**: sa
    - **Password**: TaskManager123!
-   - **Database**: TaskManagerDb
 
 ---
 
@@ -47,7 +44,7 @@ docker-compose up -d
 ```
 
 This starts:
-- PostgreSQL 15 container (taskmanager-postgres)
+- SQL Server 2022 container (taskmanager-sqlserver)
 - Adminer container (taskmanager-adminer)
 
 ### 2. Verify Docker Containers
@@ -177,12 +174,8 @@ Location: `backend/TaskManager.Api/appsettings.Development.json`
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=TaskManagerDb;Username=taskmanageradmin;Password=TaskManager123!;SSL Mode=Disable"
-  },
-  "AllowedOrigins": [
-    "http://localhost:5173",
-    "https://localhost:5173"
-  ]
+    "DefaultConnection": "Server=localhost,1433;Database=TaskManagerDb;User Id=sa;Password=TaskManager123!;TrustServerCertificate=True"
+  }
 }
 ```
 
@@ -198,13 +191,14 @@ VITE_ENVIRONMENT=development
 
 ## Troubleshooting
 
-### PostgreSQL Connection Issues
+### SQL Server Connection Issues
 
-**Problem**: "role 'taskmanageradmin' does not exist"
+**Problem**: App cannot connect to SQL Server
 
-**Solution**: Stop local PostgreSQL if running
+**Solution**: Ensure Docker is running and the container is healthy
 ```bash
-brew services stop postgresql@17
+docker ps
+docker logs taskmanager-sqlserver
 ```
 
 ### Port Already in Use
@@ -219,9 +213,9 @@ lsof -ti:5214 | xargs kill -9
 lsof -ti:5173 | xargs kill -9
 ```
 
-**PostgreSQL (5432)**:
+**SQL Server (1433)**:
 ```bash
-lsof -ti:5432 | xargs kill -9
+lsof -ti:1433 | xargs kill -9
 ```
 
 ### Docker Issues
@@ -252,7 +246,7 @@ dotnet ef database update
 - **Production**: taskmanager-prod
 
 ### Azure Resources (When Deployed)
-- **PostgreSQL Flexible Server**: B1ms tier (Free tier eligible)
+- **SQL Server**: B1ms tier (Free tier eligible)
 - **App Service**: F1 tier (Free)
 - **Static Web App**: Free tier
 - **Key Vault**: Standard tier
@@ -291,7 +285,7 @@ taskManager/
 │       ├── services/        # API services
 │       ├── types/          # TypeScript types
 │       └── App.tsx
-├── docker-compose.yml       # PostgreSQL + Adminer
+├── docker-compose.yml       # SQL Server + Adminer
 └── .github/workflows/       # CI/CD pipelines
 ```
 
@@ -319,9 +313,9 @@ taskManager/
 
 ## Important Notes
 
-- **Local PostgreSQL**: Make sure local PostgreSQL service is stopped to avoid conflicts with Docker
+- **Local SQL Server**: Make sure no local SQL Server service is running on port 1433 to avoid conflicts with Docker
 - **CORS**: Configured for localhost:5173 and Azure Static Web Apps
-- **Entity Framework**: Auto-creates database in development, uses migrations in production
+- **Entity Framework**: Migrations run automatically on app startup via `Program.cs`
 - **Points System**: Users earn points when tasks are finalized
 - **Multi-tenant**: All data is scoped by OrganizationId
 - **Task Workflow**: uncompleted → assigned/picked → completed → finalized

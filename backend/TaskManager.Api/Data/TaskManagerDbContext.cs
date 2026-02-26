@@ -64,7 +64,7 @@ public class TaskManagerDbContext : DbContext
             entity.HasOne(t => t.Assignee)
                 .WithMany(u => u.AssignedTasks)
                 .HasForeignKey(t => t.AssigneeId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             // Task -> Organization relationship
             entity.HasOne(t => t.Organization)
@@ -116,13 +116,13 @@ public class TaskManagerDbContext : DbContext
             entity.HasOne(th => th.PreviousAssignee)
                 .WithMany()
                 .HasForeignKey(th => th.PreviousAssigneeId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             // TaskHistory -> NewAssignee relationship (nullable)
             entity.HasOne(th => th.NewAssignee)
                 .WithMany()
                 .HasForeignKey(th => th.NewAssigneeId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         base.OnModelCreating(modelBuilder);

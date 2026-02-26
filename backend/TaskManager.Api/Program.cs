@@ -14,7 +14,11 @@ if (!string.IsNullOrEmpty(keyVaultName))
 }
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -31,7 +35,11 @@ builder.Services.AddDbContext<TaskManagerDbContext>(options =>
     // Prefer Key Vault secret name; fall back to standard connection string config
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? builder.Configuration["DatabaseConnectionString"];
-    options.UseSqlServer(connectionString);
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        // Retry handles transient errors including auto-paused Azure SQL waking up
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+    });
 });
 
 // Add application services
@@ -71,12 +79,16 @@ app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
-// Apply migrations and seed initial data
+// Apply migrations and seed initial data (retries handle auto-paused Azure SQL waking up)
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TaskManagerDbContext>();
-    context.Database.Migrate();
-    await DataSeeder.SeedAsync(context);
+    var retryPolicy = context.Database.CreateExecutionStrategy();
+    await retryPolicy.ExecuteAsync(async () =>
+    {
+        await context.Database.MigrateAsync();
+        await DataSeeder.SeedAsync(context);
+    });
 }
 
 app.Run();

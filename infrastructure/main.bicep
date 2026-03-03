@@ -63,17 +63,17 @@ module keyVault 'modules/keyvault.bicep' = {
 }
 
 // Deploy Azure SQL Database (Free tier)
-module database 'modules/database.bicep' = {
-  name: 'databaseDeployment'
-  params: {
-    serverName: dbServerName
-    location: location
-    environment: environment
-    azureAdAdminLogin: azureAdAdminLogin
-    azureAdAdminSid: azureAdAdminSid
-    azureAdTenantId: azureAdTenantId
-  }
-}
+// module database 'modules/database.bicep' = {
+//   name: 'databaseDeployment'
+//   params: {
+//     serverName: dbServerName
+//     location: location
+//     environment: environment
+//     azureAdAdminLogin: azureAdAdminLogin
+//     azureAdAdminSid: azureAdAdminSid
+//     azureAdTenantId: azureAdTenantId
+//   }
+// }
 
 // Deploy App Service
 module appService 'modules/appservice.bicep' = {
@@ -84,7 +84,8 @@ module appService 'modules/appservice.bicep' = {
     location: location
     environment: environment
     keyVaultName: keyVaultName
-    dbConnectionString: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    dbConnectionString: ''
+    // dbConnectionString: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
 }
@@ -101,12 +102,12 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
 }
 
 // Store secrets in Key Vault
-resource dbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  name: '${keyVaultName}/DatabaseConnectionString'
-  properties: {
-    value: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
-  }
-}
+// resource dbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+//   name: '${keyVaultName}/DatabaseConnectionString'
+//   properties: {
+//     value: 'Server=tcp:${database.outputs.serverFqdn},1433;Initial Catalog=${database.outputs.databaseName};Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+//   }
+// }
 
 resource appInsightsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   name: '${keyVaultName}/ApplicationInsightsConnectionString'
